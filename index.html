@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ultra-Fast Spotify Style Liquid Glass Player</title>
+
+<style>
+:root {
+    --neon-cyan: #00f5ff;
+    --neon-purple: #9d4edf;
+    --text-active: #ffffff;
+    --text-muted: rgba(255, 255, 255, 0.25);
+    --text-adjacent: rgba(255, 255, 255, 0.65);
+}
+
+/* Butter-smooth background aurora animation */
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle at 50% 0%, #1e1145, #0b0f19, #02040a);
+    background-size: 140% 140%;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Roboto, Helvetica, sans-serif;
+    color: white;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* Hyper-polished neon glassmorphism card */
+.glass {
+    width: 100%;
+    max-width: 480px;
+    padding: 35px 25px;
+    border-radius: 32px;
+    background: rgba(10, 15, 30, 0.55);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 
+                0 0 60px rgba(0, 245, 255, 0.05),
+                0 0 100px rgba(157, 78, 223, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    text-align: center;
+    box-sizing: border-box;
+    position: relative;
+}
+
+h3 {
+    margin: 0 0 5px 0;
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--neon-cyan), #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.sub-header {
+    font-size: 0.85rem;
+    color: var(--text-adjacent);
+    margin-bottom: 25px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 600;
+}
+
+/* Sleek Grid Inputs */
+.search-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.search-input {
+    padding: 14px 16px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.04);
+    color: white;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.search-input:focus {
+    border-color: var(--neon-cyan);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 15px rgba(0, 245, 255, 0.15);
+}
+
+/* Futuristic File Picker Button */
+.file-btn {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.05));
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    font-weight: 600;
+    font-size: 14px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+.file-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--neon-cyan);
+    color: var(--neon-cyan);
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.control-btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 16px;
+    border: none;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+    box-sizing: border-box;
+    cursor: pointer;
+    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+    color: white;
+    box-shadow: 0 8px 25px rgba(0, 245, 255, 0.2);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.control-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(157, 78, 223, 0.4);
+    filter: brightness(1.1);
+}
+
+select {
+    margin-top: 12px;
+    width: 100%;
+    padding: 14px;
+    border-radius: 16px;
+    background: rgba(15, 22, 42, 0.6);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    outline: none;
+    backdrop-filter: blur(10px);
+}
+
+.status {
+    margin: 15px 0 5px 0;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--neon-cyan);
+    opacity: 0.9;
+    font-weight: 700;
+}
+
+/* Premium Cinematic Lyrics Window */
+.lyrics {
+    margin-top: 20px;
+    padding: 110px 0; /* Creates cinematic center focal area */
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    height: 280px;
+    overflow-y: hidden; /* Prevent manual raw scrollbars from breaking elegance */
+    text-align: center;
+    position: relative;
+    box-sizing: border-box;
+    pointer-events: none; /* Smooth automated navigation focus */
+}
+
+/* Lyric Lines Transitions - Instant Spotify Snappiness */
+.lyric-wrapper {
+    transition: transform 0.2s cubic-bezier(0.1, 0.9, 0.2, 1);
+    will-change: transform;
+}
+
+.lyric-line {
+    padding: 12px 20px;
+    margin: 2px 0;
+    font-size: 16px;
+    line-height: 1.4;
+    font-weight: 500;
+    color: var(--text-muted);
+    transition: color 0.15s ease, transform 0.15s cubic-bezier(0.1, 0.9, 0.2, 1), filter 0.15s ease;
+    transform: scale(0.95);
+    filter: blur(0.5px);
+    will-change: transform, color, filter;
+}
+
+/* Spotify / Apple Music Active Glowing States */
+.lyric-line.active {
+    color: var(--text-active);
+    font-weight: 700;
+    font-size: 20px;
+    transform: scale(1.03);
+    filter: blur(0px);
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.4), 
+                 0 0 30px rgba(0, 245, 255, 0.2);
+}
+
+.lyric-line.adjacent {
+    color: var(--text-adjacent);
+    transform: scale(0.98);
+    filter: blur(0px);
+}
+
+audio {
+    width: 100%; 
+    margin-top: 20px;
+    border-radius: 12px;
+    opacity: 0.15;
+    transition: opacity 0.3s;
+}
+audio:hover, audio:focus {
+    opacity: 0.9;
+}
+</style>
+</head>
+<body>
+
+<div class="glass">
+    <h3>Liquid Glass Engine</h3>
+    <div class="sub-header">Spotify Speed Edition</div>
+
+    <div class="search-container">
+        <input type="text" id="trackTitle" class="search-input" placeholder="Song Title" value="Touch">
+        <input type="text" id="trackArtist" class="search-input" placeholder="Artist" value="KATSEYE">
+    </div>
+    <button class="control-btn" style="margin-bottom: 12px;" onclick="fetchLyrics()">🔍 Find Synced Lyrics</button>
+
+    <label for="fileInput" class="file-btn" id="fileLabel">📁 Drop or Select MP3 Track</label>
+    <input type="file" id="fileInput" accept=".mp3">
+
+    <button class="control-btn" onclick="playSong()">▶ Stream Performance</button>
+
+    <select id="language" onchange="changeLanguage()">
+        <option value="touch" selected>Touch (Official Debut Track)</option>
+        <option value="iconic">Iconic by Mistake (Instant-Sync)</option>
+        <option value="pinky">Pinky Up (Instant-Sync)</option>
+        <option value="mia">M.I.A (Instant-Sync)</option>
+        <option value="en">Demo English Track</option>
+        <option value="fil">Demo Filipino Track</option>
+    </select>
+
+    <div class="status" id="status">Engine Ready</div>
+
+    <div class="lyrics" id="lyricsBox">
+        <div class="lyric-wrapper" id="lyricWrapper"></div>
+    </div>
+
+    <audio id="audio" controls></audio>
+</div>
+
+<script>
+let audio = document.getElementById("audio");
+let statusText = document.getElementById("status");
+let lyricsBox = document.getElementById("lyricsBox");
+let lyricWrapper = document.getElementById("lyricWrapper");
+let fileInput = document.getElementById("fileInput");
+let fileLabel = document.getElementById("fileLabel");
+
+let timedLyrics = [];
+let lastActiveIndex = -1;
+
+fileInput.addEventListener("change", function () {
+    let file = this.files[0];
+    if (!file) return;
+
+    if (file.name.toLowerCase().endsWith(".mp3")) {
+        audio.src = URL.createObjectURL(file);
+        statusText.innerText = "⚡ Track Loaded Successfully";
+        fileLabel.innerText = "🎵 " + file.name;
+    } else {
+        statusText.innerText = "❌ Denied: Requires .MP3 File Format";
+        this.value = "";
+    }
+});
+
+function playSong() {
+    if (!audio.src) {
+        statusText.innerText = "❌ Load an MP3 Track First";
+        return;
+    }
+    audio.play();
+    statusText.innerText = "⚡ Live Spotify Sync Active";
+}
+
+// Rapid TimeUpdate Tracking - Instant calculations
+audio.addEventListener("timeupdate", () => {
+    if (timedLyrics.length === 0) return;
+
+    let currentTime = audio.currentTime;
+    let activeIndex = -1;
+
+    // Fast-search approach to instantly find matching lyric line index
+    for (let i = 0; i < timedLyrics.length; i++) {
+        if (currentTime >= timedLyrics[i].time) {
+            activeIndex = i;
+        } else {
+            break;
+        }
+    }
+
+    if (activeIndex !== -1 && activeIndex !== lastActiveIndex) {
+        let lines = lyricWrapper.children;
+        
+        // Remove active class from old lines quickly
+        if (lastActiveIndex !== -1) {
+            if (lines[lastActiveIndex]) lines[lastActiveIndex].className = "lyric-line";
+            if (lines[lastActiveIndex - 1]) lines[lastActiveIndex - 1].className = "lyric-line";
+            if (lines[lastActiveIndex + 1]) lines[lastActiveIndex + 1].className = "lyric-line";
+        }
+
+        // Apply new focused classes instantly
+        if (lines[activeIndex]) lines[activeIndex].className = "lyric-line active";
+        if (lines[activeIndex - 1]) lines[activeIndex - 1].className = "lyric-line adjacent";
+        if (lines[activeIndex + 1]) lines[activeIndex + 1].className = "lyric-line adjacent";
+
+        lastActiveIndex = activeIndex;
+
+        // Snappy Spotify Style Transformation Scroll
+        let activeLine = lines[activeIndex];
+        if (activeLine) {
+            let offset = activeLine.offsetTop - 15;
+            lyricWrapper.style.transform = `translate3d(0, -${offset}px, 0)`;
+        }
+    }
+});
+
+function parseLRC(lrcText) {
+    timedLyrics = [];
+    lyricWrapper.innerHTML = "";
+    lastActiveIndex = -1;
+    lyricWrapper.style.transform = `translate3d(0, 0, 0)`;
+    
+    const lines = lrcText.split(/\r?\n/);
+    const timestampRegex = /\[(\d{2}):(\d{2})(?:\.(\d{2,3}))?\]/g;
+
+    lines.forEach(line => {
+        let text = line.replace(timestampRegex, "").trim();
+        timestampRegex.lastIndex = 0;
+        let match;
+        
+        while ((match = timestampRegex.exec(line)) !== null) {
+            let minutes = parseInt(match[1], 10);
+            let seconds = parseInt(match[2], 10);
+            let milliseconds = match[3] ? parseInt(match[3], 10) : 0;
+            if (match[3] && match[3].length === 2) milliseconds *= 10;
+
+            let totalTimeSeconds = (minutes * 60) + seconds + (milliseconds / 1000);
+            timedLyrics.push({ time: totalTimeSeconds, text: text });
+        }
+    });
+
+    timedLyrics.sort((a, b) => a.time - b.time);
+
+    if (timedLyrics.length > 0) {
+        timedLyrics.forEach((item) => {
+            let lineDiv = document.createElement("div");
+            lineDiv.className = "lyric-line";
+            lineDiv.textContent = item.text || "• • •";
+            lyricWrapper.appendChild(lineDiv);
+        });
+    } else {
+        lines.forEach(line => {
+            if(line.trim() === "") return;
+            let lineDiv = document.createElement("div");
+            lineDiv.className = "lyric-line adjacent";
+            lineDiv.textContent = line;
+            lyricWrapper.appendChild(lineDiv);
+        });
+    }
+}
+
+async function fetchLyrics() {
+    let title = document.getElementById("trackTitle").value.trim().toLowerCase();
+    let artist = document.getElementById("trackArtist").value.trim();
+    if (!title) return;
+
+    statusText.innerText = "📡 Querying Satellite DB...";
+    try {
+        let url = `https://lrclib.net/api/search?track_name=${encodeURIComponent(title)}`;
+        if (artist) url += `&artist_name=${encodeURIComponent(artist)}`;
+
+        let response = await fetch(url);
+        let data = await response.json();
+
+        if (data && data.length > 0 && data[0].syncedLyrics) {
+            statusText.innerText = "Base Line Connected";
+            parseLRC(data[0].syncedLyrics);
+        } else {
+            fallbackLocal(title);
+        }
+    } catch (error) {
+        fallbackLocal(title);
+    }
+}
+
+function fallbackLocal(title) {
+    if (title.includes("touch")) {
+        statusText.innerText = "🔒 Local Ultra-LRC Injector Engaged";
+        document.getElementById("language").value = "touch";
+        changeLanguage();
+    } else if (title.includes("iconic")) {
+        statusText.innerText = "🔒 Local Ultra-LRC Injector Engaged";
+        document.getElementById("language").value = "iconic";
+        changeLanguage();
+    } else if (title.includes("pinky")) {
+        statusText.innerText = "🔒 Local Ultra-LRC Injector Engaged";
+        document.getElementById("language").value = "pinky";
+        changeLanguage();
+    } else if (title.includes("mia") || title.includes("m.i.a")) {
+        statusText.innerText = "🔒 Local Ultra-LRC Injector Engaged";
+        document.getElementById("language").value = "mia";
+        changeLanguage();
+    } else {
+        statusText.innerText = "❌ Missing Sync Metadata";
+    }
+}
+
+function changeLanguage() {
+    let lang = document.getElementById("language").value;
+    let lyrics = {
+        touch: `[00:01.00] 🎧 (Touch - KATSEYE)
+[00:02.50] La, la-la, la-la-la, la-la
+[00:05.80] La, la-la, la-la-la, la-la
+[00:09.10] I don't need no one, two, three, not bourgeoisie, I'll step in
+[00:12.60] Know just how to make a scene, just me myself my best friends
+[00:16.10] Uh-huh, I like it, it's simple as that
+[00:19.40] That's right, uh-huh
+[00:21.20] I like it, I keep comin' back
+[00:23.00] I don't need nobody tryna tell me how to run it
+[00:26.50] Found myself some baddies, 'bout to turn it to a hundred
+[00:30.00] Uh-huh, they like it, it's simple as that
+[00:33.40] That's right, uh-huh, they like it, they keep comin' back
+[00:37.00] Oh, we ain't flexin', babe, we do what we do
+[00:40.40] Wanna pull up on us? Check in at the gate and come through
+[00:43.90] We can run it, run it, run it, no, this ain't a debut
+[00:47.40] Love me once, I know you'll love me twice
+[00:50.90] Love me once, the naughty turns to nice
+[00:54.40] La, la-la, la-la-la, la-la
+[00:57.90] I don't need no cookie cutter, perfect ordinary (no)
+[01:01.40] Can find me under "ride or die" inside that dictionary
+[01:05.00] Babe, uh-huh, they like it, it's simple as that
+[01:08.30] That's right, uh-huh, they like it, they keep comin' back
+[01:11.90] Oh, we ain't flexin', babe, we do what we do
+[01:15.30] Wanna pull up on us? Check in at the gate and come through
+[01:18.80] We can run it, run it, run it, no, this ain't a debut
+[01:22.30] Love me once, I know you'll love me twice
+[01:25.80] Love me once, the naughty turns to nice
+[01:29.30] Oh, we ain't flexin', babe, we do what we do
+[01:32.70] Wanna pull up on us? Check in at the gate and come through
+[01:36.20] We can run it, run it, run it, no, this ain't a debut
+[01:39.70] Love me once, I know you'll love me twice
+[01:43.20] Love me once, the naughty turns to nice
+[01:46.70] La, la-la, la-la-la, la-la
+[01:50.15] La, la-la, la
+[01:51.90] Love me once, I know you'll love me twice
+[01:53.70] La, la-la, la-la-la, la-la
+[01:57.10] Love me once, I know you'll love me twice
+[01:58.90] Love me once, it's time to roll the dice`,
+        iconic: `[00:01.00] 🎧 (Iconic By Mistake - KATSEYE)
+[00:04.50] Hating me is like all you do
+[00:06.20] Breakfast to dinner
+[00:07.80] Algorithm bulletproof
+[00:09.50] Br-Breaking your fingers
+[00:11.30] Thank you for the comments
+[00:13.00] It's because of all your hate
+[00:14.80] I-I-I-I-I-I-I-I am iconic by mistake
+[00:18.25] I-I-I-I-I-I-I-I am iconic by mistake
+[00:21.80] Engrave it on my tombstone
+[00:24.50] I, I survived the fame
+[00:26.50] And I barely changed
+[00:28.50] Heart, heart it, heart it harder
+[00:31.80] Here, heart is like a verb
+[00:33.40] Come heal it where it hurts
+[00:35.30] Your imagination got me going viral
+[00:38.80] Life's a simulation, got me in a spiral
+[00:42.20] 24/7, more like 25/8
+[00:45.00] Honestly, are you okay?
+[00:47.30] Hating me is like all you do
+[00:49.00] Breakfast to dinner
+[00:50.60] Algorithm bulletproof
+[00:52.30] Br-Breaking your fingers
+[00:54.05] Thank you for the comments
+[00:55.80] It's because of all your hate
+[00:57.65] I-I-I-I-I-I-I-I am iconic by mistake
+[01:01.00] I-I-I-I-I-I-I-I am iconic by mistake
+[01:04.50] Never off duty, duty
+[01:06.20] Taking a beating, beating
+[01:07.90] I keep on cheesing, cheesing
+[01:09.60] Looks are deceiving, deceiving
+[01:11.40] Act like you knew me, know me
+[01:13.10] Flapping your lips foaming
+[01:14.85] I just keep on going
+[01:16.50] Too beautiful to be broken
+[01:18.20] Your imagination got me going viral
+[01:21.65] Life's a simulation, got me in a spiral
+[01:25.10] 24/7, more like 25/8
+[01:27.90] Honestly, are you okay?
+[01:30.15] Hating me is like all you do
+[01:31.80] Breakfast to dinner
+[01:33.50] Algorithm bulletproof
+[01:35.20] Br-Breaking your fingers
+[01:37.00] Thank you for the comments
+[01:38.70] It's because of all your hate
+[01:40.50] I-I-I-I-I-I-I-I am iconic by mistake
+[01:43.90] I-I-I-I-I-I-I-I am iconic by mistake
+[01:47.40] I'm just tryna stay me, dance a little crazy
+[01:50.70] But now I am iconic from how much you fuckin' hate me
+[01:54.30] Snap my neck, 360, demanding me in 5D
+[01:57.70] Do this for the dream, na-na, not just for the bag
+[02:01.30] (Ayy) but the bag is nice, though
+[02:03.00] (Ayy) and I'm so grateful
+[02:04.70] (Wait) I'm getting kinda spiritual
+[02:06.40] Been to Hell and back, let 'em judge me, Crucible
+[02:09.70] Your imagination got me going viral
+[02:13.10] Life's a simulation, got me in a spiral
+[02:16.60] 24/7, more like 25/8
+[02:19.40] Honestly, are you okay?
+[02:21.50] Your digital footprint is looking so insane
+[02:24.95] Hating me is like all you do
+[02:26.65] Breakfast to dinner
+[02:28.30] Algorithm bulletproof
+[02:30.00] Br-Breaking your fingers
+[02:31.80] Thank you for the comments
+[02:33.50] It's because of all your hate
+[02:35.30] I-I-I-I-I-I-I-I am iconic by mistake
+[02:38.70] I-I-I-I-I-I-I (I), I-I-I-I-I-I-I (I)
+[02:42.10] I-I-I-I-I-I-I (I), I-I-I-I-I-I-I (I)
+[02:45.60] I-I-I-I-I-I-I, I-I-I-I-I-I-I (I)`,
+        pinky: `[00:01.00] 🎧 (Pinky Up)
+[00:02.50] I-I-I-I bet it goes like this
+[00:04.20] Pinky up, up
+[00:05.80] Pinky up, up
+[00:07.40] Pinky up, up
+[00:09.00] Pinky up, up
+[00:10.50] Put this pinky up
+[00:12.30] One day, soon, the world's gonna end
+[00:15.10] I'm gonna make out with my new bestest friends
+[00:18.50] I wanna live large, right before it all burns down
+[00:22.00] (Up, up, pinky up)
+[00:24.50] Go hard like we're robbin' the Louvre
+[00:27.20] We Mona Lisa with a cute attitude
+[00:30.50] I wanna get high right before we're in the ground (ooh)
+[00:34.20] Ooh, we're screaming from cloud nine
+[00:37.80] No one can touch us if they tried
+[00:41.20] Ooh, but it's a state of mind
+[00:44.50] (I-I-I-I bet it goes like this)
+[00:46.40] Pin-pinky up, up
+[00:48.00] Pinky up, up
+[00:49.60] Pin-pin-pin-pinky up, up
+[00:51.50] Pinky up, up
+[00:53.20] Us against the world, shaking ass in the parking lot
+[00:56.50] If we get arrested, haha, baby, laugh it off
+[00:59.80] I love you, you love me, we batshit, oui, oui
+[01:03.20] And I'd kill 'em for you if it got that deep
+[01:06.50] Fancy is a frequency
+[01:09.20] A mind of delusion, philosophy
+[01:12.50] I kinda know nothing, just like Socrates
+[01:15.80] (The only true wisdom is knowing you know nothing)
+[01:19.40] Ooh, we're screaming from cloud nine
+[01:23.00] No one can touch us if they tried
+[01:26.50] Ooh, but it's a state of mind
+[01:29.80] (I-I-I-I bet it goes like this)
+[01:31.60] Pin-pinky up, up
+[01:33.20] Pinky up, up
+[01:34.80] Pin-pin-pin-pinky up, up
+[01:36.60] Pinky- (one, two, one, two, three, four)
+[01:39.80] Pin-pinky up, up
+[01:41.40] Pinky up, up
+[01:43.00] Pin-pin-pin-pinky up, up
+[01:44.80] Pinky up, up
+[01:46.40] Pin-pin-pin-pinky-`,
+        mia: `[00:01.00] 🎧 (M.I.A)
+[00:03.50] M.I.A
+[00:05.00] I-I-ma go, go
+[00:06.80] I'll go M.I.A
+[00:08.50] I-I-ma go, go
+[00:10.20] Smoke and mirrors, see me clearer when you close your eyes
+[00:14.20] Ah, ah, ah, yeah
+[00:16.80] The missing ring around your finger, swore you wore last night
+[00:21.00] Won't see me twice
+[00:23.50] No, ah, don't be like this
+[00:25.40] No, you won't put a leash on a bitch
+[00:27.20] You want more, but you get what I give
+[00:29.00] Don't get comfortable, 'cause any minute now
+[00:31.50] I'll dip and dash
+[00:33.00] Got the car with my girls in the back
+[00:34.80] Boy, I know that you're feeling attached
+[00:36.60] Don't get comfortable, 'cause any minute now
+[00:39.20] I'll go M.I.A
+[00:41.00] I-I-ma go, go
+[00:42.80] I'll go M.I.A
+[00:44.50] Solo in SoHo
+[00:46.20] I'll go M.I.A
+[00:48.00] Say, where she go, go?
+[00:49.80] Nobody knows
+[00:51.50] Don't get comfortable, 'cause any minute now
+[00:54.20] M.I, M.I.A
+[00:56.00] M.I, M.I.A
+[00:57.80] Too bad, so sad, I won't hit back (you)
+[01:01.20] I'm halfway out the country, making it (move)
+[01:04.80] No, ah, don't be like this
+[01:06.60] No, you won't put a leash on a bitch
+[01:08.40] You want more, but you get what I give
+[01:10.20] Don't get comfortable, 'cause any minute now
+[01:12.80] I'll dip and dash
+[01:14.30] Got the car with my girls in the back
+[01:16.10] Boy, I know that you're feeling attached
+[01:17.90] Don't get comfortable, 'cause any minute now
+[01:20.50] I-I, I'll go M.I.A
+[01:22.20] I-I-ma go, go
+[01:24.00] I'll go M.I.A
+[01:25.80] Solo in SoHo
+[01:27.50] I'll go M.I.A
+[01:29.30] Say, where she go, go?
+[01:31.10] Nobody knows
+[01:32.80] Don't get comfortable, 'cause any minute now
+[01:35.50] M.I, M.I.A
+[01:37.20] M.I, M.I.A (I'll go M.I.A)
+[01:39.00] M.I, M.I.A (I'll go, go)
+[01:40.80] M.I, M.I.A
+[01:42.50] M.I.A
+[01:44.00] I'ma, I'ma go M.I.A
+[01:45.80] I'ma, I'ma go M.I.A
+[01:47.60] I'ma, I'ma go M.I.A`
+    };
+
+    parseLRC(lyrics[lang] || "");
+}
+
+window.addEventListener("DOMContentLoaded", changeLanguage);
+</script>
+</body>
+</html>
